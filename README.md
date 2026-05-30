@@ -17,7 +17,7 @@ Count of Invoice Received in last 30 days
 Week Over Week changes in Invoice Quantity
 Most recent Invoice by Vendor
 Vendor having Heighest Number of Bill pending
-Vendor having Heighest Number of Bill pending
+Vendor having Heighest Number of Bill pending.
 ## About Me
 Data professional with 14+ years of experience transitioning toward Data Analytics and Business Intelligence. Skilled in Tableau, Quicksight,Sql,Regulatory Re[orting,FinOps,business reporting, and data-driven decision making.
 ## Connect me on Linkedin
