@@ -1,0 +1,386 @@
+# 📊 Accounts Receivable (AR) Analysis Using SQL
+
+## Project Overview
+
+This project analyzes Accounts Receivable (AR) data using SQL. The objective is to identify payment trends, outstanding balances, customer payment behavior, and key financial metrics that are commonly used by Finance, AR, and Business Intelligence teams.
+
+### Skills Demonstrated
+
+* SQL DDL (CREATE TABLE)
+* SQL DML (INSERT)
+* Data Aggregation
+* Filtering & Sorting
+* CASE Statements
+* Common Table Expressions (CTEs)
+* Window Functions
+* Ranking Functions
+* Business KPI Reporting
+* Accounts Receivable Analysis
+
+---
+
+# Dataset Creation
+
+## Create Table
+
+```sql
+CREATE TABLE AR_Analysis (
+    InvoiceID INTEGER,
+    Customer_Name VARCHAR(40),
+    Invoice_Date DATE,
+    Inv_Amount INTEGER,
+    Regions VARCHAR(40),
+    Country VARCHAR(40),
+    Due_Date DATE,
+    Payment_Status VARCHAR(40)
+);
+```
+
+## Insert Sample Data
+
+```sql
+INSERT INTO AR_Analysis
+VALUES
+(1001,'ABC Firm',DATE '2026-01-01',1000,'APAC','India',DATE '2026-01-16','Paid'),
+(1002,'A Corp',DATE '2026-01-02',2000,'APAC','India',DATE '2026-01-17','Unpaid'),
+(1003,'T Soft',DATE '2026-01-03',3000,'APAC','India',DATE '2026-01-18','Paid'),
+(1004,'JK Type',DATE '2022-01-04',4000,'APAC','India',DATE '2022-01-18','Unpaid'),
+(1005,'Red Seas',DATE '2022-01-05',5000,'APAC','India',DATE '2022-01-19','Paid'),
+(1006,'PR Group',DATE '2022-01-06',6000,'APAC','India',DATE '2022-01-20','Unpaid'),
+(1007,'STC Group',DATE '2022-01-07',7000,'APAC','India',DATE '2022-01-21','Paid'),
+(1008,'ABC Corp',DATE '2022-01-08',8000,'APAC','India',DATE '2022-01-22','Unpaid'),
+(1009,'YZA',DATE '2022-01-09',9000,'APAC','India',DATE '2022-01-23','Paid'),
+(1010,'A Corp',DATE '2026-01-10',10000,'APAC','India',DATE '2026-01-25','Unpaid'),
+(1011,'T Soft',DATE '2022-01-11',11000,'APAC','India',DATE '2022-01-25','Paid'),
+(1012,'STC Group',DATE '2022-01-12',12000,'APAC','India',DATE '2022-01-26','Unpaid'),
+(1013,'ABC Corp',DATE '2022-01-13',13000,'APAC','India',DATE '2022-01-27','Paid'),
+(1014,'PR Group',DATE '2022-01-14',14000,'APAC','India',DATE '2022-01-28','Unpaid'),
+(1015,'T Soft',DATE '2022-01-15',15000,'APAC','India',DATE '2022-01-29','Paid'),
+(1016,'Lehmn Bros',DATE '2022-01-16',16000,'APAC','India',DATE '2022-01-30','Unpaid'),
+(1017,'Citi Corp',DATE '2022-01-17',17000,'APAC','India',DATE '2022-01-31','Paid'),
+(1018,'Abroad Firm',DATE '2022-01-18',18000,'APAC','India',DATE '2022-02-01','Unpaid'),
+(1019,'CDK Group',DATE '2022-01-19',19000,'APAC','India',DATE '2022-02-02','Paid'),
+(1020,'Alonseo Inc',DATE '2022-01-20',20000,'APAC','India',DATE '2022-02-03','Unpaid');
+```
+
+---
+
+# Business Questions & SQL Solutions
+
+## 1. Total Invoices Received
+
+```sql
+SELECT COUNT(*) AS Total_Invoices
+FROM AR_Analysis;
+```
+
+## 2. Total Pending Payments
+
+```sql
+SELECT COUNT(*) AS Pending_Invoices
+FROM AR_Analysis
+WHERE Payment_Status='Unpaid';
+```
+
+## 3. Customer with Maximum Unpaid Invoices
+
+```sql
+WITH A AS (
+SELECT Customer_Name,
+       COUNT(*) AS Cnt
+FROM AR_Analysis
+WHERE Payment_Status='Unpaid'
+GROUP BY Customer_Name
+),
+B AS (
+SELECT *,
+       DENSE_RANK() OVER(ORDER BY Cnt DESC) AS Rnk
+FROM A
+)
+SELECT *
+FROM B
+WHERE Rnk=1;
+```
+
+## 4. Customer with Maximum Paid Invoices
+
+```sql
+WITH A AS (
+SELECT Customer_Name,
+       COUNT(*) AS Cnt
+FROM AR_Analysis
+WHERE Payment_Status='Paid'
+GROUP BY Customer_Name
+),
+B AS (
+SELECT *,
+       DENSE_RANK() OVER(ORDER BY Cnt DESC) AS Rnk
+FROM A
+)
+SELECT *
+FROM B
+WHERE Rnk=1;
+```
+
+## 5. Total Invoice Amount
+
+```sql
+SELECT SUM(Inv_Amount) AS Total_Invoice_Amount
+FROM AR_Analysis;
+```
+
+## 6. Outstanding Receivable Amount
+
+```sql
+SELECT SUM(Inv_Amount) AS Outstanding_Amount
+FROM AR_Analysis
+WHERE Payment_Status='Unpaid';
+```
+
+## 7. Total Collected Amount
+
+```sql
+SELECT SUM(Inv_Amount) AS Collected_Amount
+FROM AR_Analysis
+WHERE Payment_Status='Paid';
+```
+
+## 8. Average Invoice Amount
+
+```sql
+SELECT AVG(Inv_Amount) AS Average_Invoice_Amount
+FROM AR_Analysis;
+```
+
+## 9. Highest Invoice Amount
+
+```sql
+SELECT *
+FROM AR_Analysis
+WHERE Inv_Amount=
+(
+SELECT MAX(Inv_Amount)
+FROM AR_Analysis
+);
+```
+
+## 10. Lowest Invoice Amount
+
+```sql
+SELECT *
+FROM AR_Analysis
+WHERE Inv_Amount=
+(
+SELECT MIN(Inv_Amount)
+FROM AR_Analysis
+);
+```
+
+## 11. Top 5 Highest Invoices
+
+```sql
+SELECT *
+FROM AR_Analysis
+ORDER BY Inv_Amount DESC
+LIMIT 5;
+```
+
+## 12. Customer-wise Invoice Summary
+
+```sql
+SELECT Customer_Name,
+       COUNT(*) AS Total_Invoices,
+       SUM(Inv_Amount) AS Total_Amount
+FROM AR_Analysis
+GROUP BY Customer_Name
+ORDER BY Total_Amount DESC;
+```
+
+## 13. Customer-wise Outstanding Balance
+
+```sql
+SELECT Customer_Name,
+       SUM(Inv_Amount) AS Outstanding_Amount
+FROM AR_Analysis
+WHERE Payment_Status='Unpaid'
+GROUP BY Customer_Name
+ORDER BY Outstanding_Amount DESC;
+```
+
+## 14. Customer-wise Collected Amount
+
+```sql
+SELECT Customer_Name,
+       SUM(Inv_Amount) AS Collected_Amount
+FROM AR_Analysis
+WHERE Payment_Status='Paid'
+GROUP BY Customer_Name
+ORDER BY Collected_Amount DESC;
+```
+
+## 15. Rank Customers by Revenue
+
+```sql
+SELECT Customer_Name,
+       SUM(Inv_Amount) AS Revenue,
+       DENSE_RANK() OVER
+       (ORDER BY SUM(Inv_Amount) DESC) AS Customer_Rank
+FROM AR_Analysis
+GROUP BY Customer_Name;
+```
+
+## 16. Customers with Multiple Invoices
+
+```sql
+SELECT Customer_Name,
+       COUNT(*) AS Invoice_Count
+FROM AR_Analysis
+GROUP BY Customer_Name
+HAVING COUNT(*) > 1;
+```
+
+## 17. Customers Having Both Paid and Unpaid Invoices
+
+```sql
+SELECT Customer_Name
+FROM AR_Analysis
+GROUP BY Customer_Name
+HAVING COUNT(DISTINCT Payment_Status)=2;
+```
+
+## 18. Running Total of Invoice Amount
+
+```sql
+SELECT InvoiceID,
+       Invoice_Date,
+       Inv_Amount,
+       SUM(Inv_Amount)
+       OVER(ORDER BY Invoice_Date)
+       AS Running_Total
+FROM AR_Analysis;
+```
+
+## 19. Invoice Category Analysis
+
+```sql
+SELECT InvoiceID,
+       Customer_Name,
+       Inv_Amount,
+       CASE
+           WHEN Inv_Amount < 5000 THEN 'Low'
+           WHEN Inv_Amount BETWEEN 5000 AND 15000 THEN 'Medium'
+           ELSE 'High'
+       END AS Invoice_Category
+FROM AR_Analysis;
+```
+
+## 20. Top Revenue Contributing Customer
+
+```sql
+WITH Revenue AS (
+SELECT Customer_Name,
+       SUM(Inv_Amount) AS Revenue
+FROM AR_Analysis
+GROUP BY Customer_Name
+)
+SELECT *
+FROM Revenue
+WHERE Revenue=
+(
+SELECT MAX(Revenue)
+FROM Revenue
+);
+```
+
+## 21. Latest Invoice
+
+```sql
+SELECT *
+FROM AR_Analysis
+WHERE Invoice_Date=
+(
+SELECT MAX(Invoice_Date)
+FROM AR_Analysis
+);
+```
+
+## 22. Oldest Invoice
+
+```sql
+SELECT *
+FROM AR_Analysis
+WHERE Invoice_Date=
+(
+SELECT MIN(Invoice_Date)
+FROM AR_Analysis
+);
+```
+
+## 23. Customer Revenue Contribution %
+
+```sql
+SELECT Customer_Name,
+       SUM(Inv_Amount) AS Revenue,
+       ROUND(
+       SUM(Inv_Amount)*100.0/
+       (SELECT SUM(Inv_Amount)
+        FROM AR_Analysis),2)
+       AS Revenue_Percentage
+FROM AR_Analysis
+GROUP BY Customer_Name
+ORDER BY Revenue_Percentage DESC;
+```
+
+## 24. Paid vs Unpaid Invoice Distribution
+
+```sql
+SELECT Payment_Status,
+       COUNT(*) AS Invoice_Count,
+       ROUND(
+       COUNT(*)*100.0/
+       (SELECT COUNT(*) FROM AR_Analysis),2)
+       AS Percentage
+FROM AR_Analysis
+GROUP BY Payment_Status;
+```
+
+## 25. Invoice Aging Analysis
+
+```sql
+SELECT InvoiceID,
+       Customer_Name,
+       Invoice_Date,
+       Due_Date,
+       CURRENT_DATE - Due_Date AS Days_Overdue
+FROM AR_Analysis
+WHERE Payment_Status='Unpaid';
+```
+
+---
+
+# Key Insights
+
+* Monitor outstanding receivables and collection performance.
+* Identify customers contributing the highest revenue.
+* Detect customers with recurring unpaid invoices.
+* Analyze payment distribution across customers.
+* Track invoice aging and overdue balances.
+* Build KPIs commonly used in Finance and Accounts Receivable reporting.
+
+---
+
+# Technologies Used
+
+* SQL
+* Window Functions
+* CTEs
+* Aggregations
+* Business Analytics
+
+---
+
+# Author
+
+**Mohammad Shariq**
+
+SQL Portfolio Project focused on Accounts Receivable Analytics, Business Reporting, and Financial KPI Analysis.
